@@ -1,0 +1,81 @@
+; auto pull is on
+
+.program hello
+
+; Repeatedly get one word of data from the TX FIFO, stalling when the FIFO is
+; empty. Write the least significant bit to the OUT pin group.
+;jmp square_bracket_end
+;jmp square_bracket_start
+;jmp x_add
+;jmp x_sub
+;jmp y_add
+;jmp y_sub
+;jmp input
+;jmp print
+square_bracket_end:
+jmp ~x,wrap
+in osr,27
+push
+square_bracket_start:
+jmp ~x,throw_away
+jmp wrap
+x_add:
+mov x,~x
+jmp x--,x_flip
+x_flip:
+mov x,~x
+jmp wrap
+x_sub:
+jmp x--,wrap
+mov x,~x
+jmp wrap
+y_sub:
+jmp y--,wrap
+mov y,~y
+jmp wrap
+input:
+set x,31
+read_x:
+in pins,1
+jmp x--,read_x
+throw_away:
+out null,27
+out x,5
+jmp ~x, wrap
+jmp throw_away
+print:
+mov osr,x
+set x,31
+write_x:
+out pins,1
+jmp x--,write_x
+jmp wrap
+y_add:
+mov y,~y
+jmp y--,y_flip
+y_flip:
+mov y,~y
+wrap:
+.wrap_target
+out isr,27
+out pc,5
+.wrap
+
+% c-sdk {
+static inline void hello_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    pio_sm_config c = hello_program_get_default_config(offset);
+
+    // Map the state machine's OUT pin group to one pin, namely the `pin`
+    // parameter to this function.
+    sm_config_set_out_pins(&c, pin, 1);
+    // Set this pin's GPIO function (connect PIO to the pad)
+    pio_gpio_init(pio, pin);
+    // Set the pin direction to output at the PIO
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    // Load our configuration, and jump to the start of the program
+    pio_sm_init(pio, sm, offset, &c);
+    // Set the state machine running
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}
