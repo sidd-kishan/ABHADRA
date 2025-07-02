@@ -27,17 +27,17 @@ mov x,~x
 jmp wrap
 x_sub:
 jmp x--,wrap
-mov x,~x
-jmp wrap
+jmp ~x,x_flip
 y_sub:
 jmp y--,wrap
-mov y,~y
-jmp wrap
+jmp ~y,y_flip
 input:
 set x,31
 read_x:
 in pins,1
 jmp x--,read_x
+mov x,isr
+jmp wrap
 throw_away:
 out null,27
 out x,5
