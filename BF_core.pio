@@ -1,4 +1,5 @@
-;auto pull and auto push are disabled
+;auto push is enabled
+;bit reverse added
 
 .program hello
 
@@ -37,7 +38,7 @@ jmp x--,bring_into_x_reg
 mov x,isr
 jmp goto_wrap
 go_to_start_of_the_loop:
-push
+in osr,26
 jmp goto_wrap
 go_to_throw_away_loop_till_the_end_of_loop:
 pull
