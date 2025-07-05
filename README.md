@@ -162,3 +162,54 @@ Write a small tool (Python or C) to:
 	2.	Prepare a Debug/Visualization Harness
 Optional: Implement GPIO debugging output (like pulsing a pin at wrap or loop entry) to watch interpreter behavior in real time with a logic analyzer or oscilloscope.
 	3.	Document Instruction Format in a Markdown Spec
+
+⸻
+
+🔁 Loop Control Logic — [ and ] via Embedded Addresses
+
+At the PIO instruction memory address PC = 0, we implement the logic for the Brainfuck ] (loop-close) command.
+
+🧠 How it Works
+	•	The x register holds the current memory cell’s value.
+	•	On encountering ], the logic checks:
+
+jmp ~x, goto_wrap
+in osr, 27
+push
+
+	•	If x ≠ 0: jump back to the loop (continue looping)
+	•	If x == 0: loop ends. We:
+	1.	Extract the 27-bit jump address (encoded in the upper bits of the instruction) using in osr, 27
+	2.	Push it into the RX FIFO via push, acting as a signal to the CPU
+
+⸻
+
+🔔 What Happens Next
+	•	The RX FIFO interrupt wakes the main ARM Cortex-M0+ core
+	•	The CPU interprets the pushed 27-bit address as the location of the matching [ (loop start)
+	•	It resumes pushing instructions from that location into the PIO’s TX FIFO
+
+This enables tight loop control even though the actual instruction stream lives on the CPU side. The PIO handles:
+	•	Arithmetic
+	•	Memory pointer control
+	•	Step logic
+
+While the CPU only participates for jump address resolution and instruction streaming.
+
+⸻
+
+🎯 Why This Design?
+
+Brainfuck’s [ and ] require:
+	•	Conditional branching
+	•	Jump-to-address behavior
+	•	And an implicit call stack-like pairing
+
+The Pi Pico PIO doesn’t have call/return instructions or general memory, so we:
+	•	Embed the matching loop address inside each instruction as a 27-bit operand
+	•	Use in osr, 27 and push to hand control back to the CPU
+	•	Let the CPU decide where to resume from in the instruction stream
+
+✅ This division of responsibilities gives us a hybrid interpreter:
+Hardware-native execution with software-assisted loop resolution.
+
