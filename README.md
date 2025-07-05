@@ -213,3 +213,35 @@ The Pi Pico PIO doesn’t have call/return instructions or general memory, so we
 ✅ This division of responsibilities gives us a hybrid interpreter:
 Hardware-native execution with software-assisted loop resolution.
 
+
+🧠 Internal Architecture Summary
+
+✅ Instruction Format
+
+Each Brainfuck instruction is a 32-bit word sent via the PIO’s pull FIFO:
+
+Bits	Purpose
+0–4	5-bit opcode (used in out pc, 5) to jump to the PIO instruction
+5–31	27-bit operand — typically used to encode jump addresses (e.g., for [ and ])
+
+🔢 This gives you 2⁷² = 134,217,728 unique instruction addressable positions for branching or memory reference logic — more than enough for typical BF programs.
+
+⸻
+
+✅ Register Use in PIO
+
+Register	Size	Role
+x	32 bits	Data register — holds the value at current cell (+, -)
+y	32 bits	Tape pointer — holds current memory address (>, <)
+osr	32 bits	Output shift register — used for emitting x/y to GPIO or memory
+isr	32 bits	Input shift register — used for reading data from GPIO
+
+✅ All registers are full 32-bit width, consistent with the RP2040 PIO architecture.
+
+⸻
+
+📌 Implications
+	•	✅ The 27-bit operand field allows for very large instruction address space — which is critical for nested loops ([ and ]) that need to jump deep into a large instruction stream.
+	•	✅ Full 32-bit x and y registers mean:
+	•	You can represent full 32-bit cell values (not just 8-bit BF cells).
+	•	You can support a massive virtual memory tape, potentially spanning external RAM or a host-side memory.
