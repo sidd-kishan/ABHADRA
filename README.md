@@ -1,3 +1,40 @@
+# 🧠 Abhadra — A Hardware Brainfuck Interpreter on the Pi Pico's PIO
+
+> _"Brainfuck needs step increment and step decrement — and the PIO can only do step increment and step decrement (by flipping bits, subtracting, then flipping again). It’s a match made in heaven."_
+
+**Abhadra** is a Turing-complete interpreter for the Brainfuck programming language, implemented entirely in the **PIO (Programmable I/O)** hardware of the Raspberry Pi Pico. It harnesses the PIO’s deterministic, low-level instruction set to run Brainfuck instructions without involving the CPU at runtime — a full **hardware-native interpreter**.
+
+---
+
+## 🧩 Why PIO?
+
+The Raspberry Pi Pico’s PIO subsystem was designed to implement custom I/O protocols, but it turns out it’s also an ideal fit for minimalist languages like Brainfuck.
+
+| Brainfuck Op | PIO Equivalent                          |
+|--------------|------------------------------------------|
+| `+` / `-`     | `x--`, `mov x,~x` (wraparound handling) |
+| `>` / `<`     | `y--`, `mov y,~y`                      |
+| `[` / `]`     | `jmp ~x`, `in osr, 26`, `push`, `pull` |
+| `.` / `,`     | `out pins,1`, `in pins,1`              |
+
+PIO allows **precise stepwise manipulation**, with no multiplication, division, or complex math. This makes it a **natural match for Brainfuck**, which also works by single-step increments, decrements, and conditional loops.
+
+---
+
+## ⚙️ Architecture
+
+- **1 PIO state machine = 1 Brainfuck interpreter core**
+- **8 cores** on a standard Pi Pico (2 PIO blocks × 4 state machines)
+- **12 cores** on the Pico W2 (3 PIO blocks)
+- Uses **27-bit operand** in each instruction to store jump addresses
+- All instructions are 32-bit values, dispatched via `out pc,5`
+
+PIO executes instructions independently from the CPU — no polling or interrupts. Once started, the state machines run the program purely in hardware.
+
+---
+
+## 📦 File Structure
+
 🧠 High-Level Overview
 
 We are using:
