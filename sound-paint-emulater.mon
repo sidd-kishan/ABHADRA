@@ -1,0 +1,40 @@
+reset
+enter -v 0x003e -a 0
+enter -v 0x0015 -a 1
+enter -v 0x0037 -a 2
+enter -v 0x001e -a 3
+enter -v 0x005e -a 4
+enter -v 0xa029 -a 5
+enter -v 0x001e -a 6
+enter -v 0x009e -a 7
+enter -v 0xa04a -a 8
+enter -v 0x001e -a 9
+enter -v 0xa031 -a 10
+enter -v 0x001e -a 11
+enter -v 0xa0e2 -a 12
+enter -v 0x6001 -a 13
+enter -v 0x00ed -a 14
+enter -v 0x001e -a 15
+enter -v 0xe03f -a 16
+enter -v 0x4001 -a 17
+enter -v 0x0051 -a 18
+enter -v 0xa026 -a 19
+enter -v 0x001e -a 20
+enter -v 0x40fa -a 21
+enter -v 0x001e -a 22
+enter -v 0x80a0 -a 23
+enter -v 0x6024 -a 24
+enter -v 0x0037 -a 25
+enter -v 0x001e -a 26
+enter -v 0xa0e1 -a 27
+enter -v 0x6001 -a 28
+enter -v 0x00fc -a 29
+enter -v 0x80a0 -a 30
+enter -v 0x60a5 -a 31
+wrap --pio=0 --sm=0 --wrap=31 -t 30
+pinctrl -p 0 -s 0 --in-base=8
+sm --pio=0 --sm=0 --enable=true
+fifo -p 0 -s 0 -t -e -v 0xF5555555
+fifo -p 0 -s 0 -t -e -v 0xF2AAAAAA
+trace -g
+trace -g
