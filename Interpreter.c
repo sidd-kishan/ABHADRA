@@ -41,8 +41,8 @@ static const uint16_t Abhadra_Interpreter_program_instructions[] = {
     0x001e, // 22: jmp    30                         
     0x80a0, // 23: pull   block                      
     0x6025, // 24: out    x, 5                       
-    0x0037, // 25: jmp    !x, 23                     
-    0x001e, // 26: jmp    30                         
+    0x003e, // 25: jmp    !x, 30                     
+    0x0017, // 26: jmp    23                         
     0xa0e1, // 27: mov    osr, x                     
     0x6001, // 28: out    pins, 1                    
     0x00fc, // 29: jmp    !osre, 28                  
