@@ -21,12 +21,12 @@ static const uint16_t Abhadra_Interpreter_program_instructions[] = {
     0x0037, //  2: jmp    !x, 23                     
     0x001e, //  3: jmp    30                         
     0x005e, //  4: jmp    x--, 30                    
-    0xa029, //  5: mov    x, !x                      
-    0x001e, //  6: jmp    30                         
-    0x009e, //  7: jmp    y--, 30                    
-    0xa04a, //  8: mov    y, !y                      
+    0x001e, //  5: jmp    30                         
+    0xa029, //  6: mov    x, !x                      
+    0x001e, //  7: jmp    30                         
+    0x009e, //  8: jmp    y--, 30                    
     0x001e, //  9: jmp    30                         
-    0xa031, // 10: mov    x, ::x                     
+    0xa04a, // 10: mov    y, !y                      
     0x001e, // 11: jmp    30                         
     0xa0e2, // 12: mov    osr, y                     
     0x6001, // 13: out    pins, 1                    
