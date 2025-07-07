@@ -1,15 +1,15 @@
 reset
-enter -v 0x003e -a 0
-enter -v 0x0015 -a 1
-enter -v 0x0037 -a 2
-enter -v 0x001e -a 3
-enter -v 0x005e -a 4
-enter -v 0xa029 -a 5
-enter -v 0x001e -a 6
-enter -v 0x009e -a 7
-enter -v 0xa04a -a 8
-enter -v 0x001e -a 9
-enter -v 0xa031 -a 10
+enter -v 0x003e -a  0
+enter -v 0x0015 -a  1
+enter -v 0x0037 -a  2
+enter -v 0x001e -a  3
+enter -v 0x005e -a  4
+enter -v 0x001e -a  5
+enter -v 0xa029 -a  6
+enter -v 0x001e -a  7
+enter -v 0x009e -a  8
+enter -v 0x001e -a  9
+enter -v 0xa04a -a 10
 enter -v 0x001e -a 11
 enter -v 0xa0e2 -a 12
 enter -v 0x6001 -a 13
@@ -23,9 +23,9 @@ enter -v 0x001e -a 20
 enter -v 0x40fa -a 21
 enter -v 0x001e -a 22
 enter -v 0x80a0 -a 23
-enter -v 0x6024 -a 24
-enter -v 0x0037 -a 25
-enter -v 0x001e -a 26
+enter -v 0x6025 -a 24
+enter -v 0x003e -a 25
+enter -v 0x0017 -a 26
 enter -v 0xa0e1 -a 27
 enter -v 0x6001 -a 28
 enter -v 0x00fc -a 29
@@ -36,5 +36,37 @@ pinctrl -p 0 -s 0 --in-base=8
 sm --pio=0 --sm=0 --enable=true
 fifo -p 0 -s 0 -t -e -v 0xF5555555
 fifo -p 0 -s 0 -t -e -v 0xF2AAAAAA
+registers
 trace -g
 trace -g
+
+Jump to wrap:
+fifo -p 0 -s 0 -t -e -v 0xF5555555
+fifo -p 0 -s 0 -t -e -v 0xF2AAAAAA
+
+jump to y-- decrement address:
+fifo -p 0 -s 0 -t -e -v 0x45555555
+fifo -p 0 -s 0 -t -e -v 0x42AAAAAA
+
+jump to flip y-address:
+fifo -p 0 -s 0 -t -e -v 0x55555555
+fifo -p 0 -s 0 -t -e -v 0x52AAAAAA
+
+jump to x-- decrement data:
+fifo -p 0 -s 0 -t -e -v 0x25555555
+fifo -p 0 -s 0 -t -e -v 0x22AAAAAA
+
+jump to x-data flip:
+fifo -p 0 -s 0 -t -e -v 0x32AAAAAA
+fifo -p 0 -s 0 -t -e -v 0x35555555
+
+jump to ] instruction at 0:
+fifo -p 0 -s 0 -t -e -v 0x05555555
+fifo -p 0 -s 0 -t -e -v 0x02AAAAAA
+
+jump to [ instruction at 2:
+fifo -p 0 -s 0 -t -e -v 0x12AAAAAA
+fifo -p 0 -s 0 -t -e -v 0x15555555
+
+in pins 1 to empty isr:
+fifo -p 0 -s 0 -t -e -v 0x8AAAAAAA
