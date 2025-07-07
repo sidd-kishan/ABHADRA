@@ -6,73 +6,97 @@ hello_world_bf = """
 ++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++. .+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.
 """
 
-# Clean input: retain only valid Brainfuck commands
-bf_commands = "><+-[].,"
-bf_code_clean = ''.join(c for c in hello_world_bf if c in bf_commands)
+# bfpio.py
+# Brainfuck to RP2040 PIO Instruction Encoder (5-bit opcode | 27-bit address)
 
-# Opcode (4-bit) for each Brainfuck command
-NIBBLE_MAP = {
-    ']': [0x0],
-    '[': [0x1],
-    '+': [0x3, 0x2, 0x3],  # flip-sub-flip
-    '-': [0x2],
-    '<': [0x4],
-    '>': [0x5, 0x4, 0x5],  # flip-sub-flip
-    '.': [0xA],
-    ',': [0xB],
+BF_COMMANDS = "><+-[].,"
+
+# PIO PC (jump address) mapping per Brainfuck command
+# Commands like '+' and '>' use 3-step sequences
+PC_MAP = {
+    '>': [5, 4, 5],     # Flip-Sub-Flip for y++
+    '<': [4],
+    '+': [3, 2, 3],     # Flip-Sub-Flip for x++
+    '-': [2],
+    '[': [1],
+    ']': [0],
+    '.': [10],
+    ',': [11],
 }
 
-def encode_command_with_nibble(cmd_nibble: int, address: int) -> int:
-    """Encode the instruction with 4-bit opcode and 28-bit address."""
-    return ((cmd_nibble & 0xF) << 28) | (address & 0x0FFFFFFF)
+def encode_command(pc: int, address: int) -> int:
+    """Encodes into 32-bit value: [5-bit pc][27-bit address]"""
+    if not (0 <= pc < 32):
+        raise ValueError("PC must be a 5-bit value (0–31)")
+    if not (0 <= address < (1 << 27)):
+        raise ValueError("Address must be a 27-bit value")
+    return (pc << 27) | (address & 0x7FFFFFF)
 
-def bf_to_nibble_hex_grouped(bf_code: str) -> list[str]:
-    # Pass 1: bracket matching for loops
+def bf_to_hex_encoded(bf_code: str) -> list[str]:
+    # Clean Brainfuck code
+    bf_code = ''.join(c for c in bf_code if c in BF_COMMANDS)
+
+    # Stack-based bracket matching
     bracket_stack = []
     bracket_map = {}
+
     for i, c in enumerate(bf_code):
         if c == '[':
             bracket_stack.append(i)
         elif c == ']':
             if not bracket_stack:
-                raise SyntaxError(f"Unmatched ] at {i}")
+                raise SyntaxError(f"Unmatched ']' at position {i}")
             start = bracket_stack.pop()
             bracket_map[start] = i
             bracket_map[i] = start
     if bracket_stack:
-        raise SyntaxError(f"Unmatched [ at {bracket_stack[-1]}")
+        raise SyntaxError(f"Unmatched '[' at position {bracket_stack[-1]}")
 
-    # Pass 2: build instruction map (grouped by command)
-    instr_map = []  # (char, char_idx, nibble, addr)
-    instr_addr = 0
-    for idx, c in enumerate(bf_code):
-        if c not in NIBBLE_MAP:
+    # Instruction list: (char, src_index, pc, addr)
+    instr_map = []
+    addr_counter = 0
+    instr_addr_map = {}  # map from bf index to base address
+
+    for idx, char in enumerate(bf_code):
+        if char not in PC_MAP:
             continue
-        nibble_group = NIBBLE_MAP[c]
-        for nib in nibble_group:
-            instr_map.append((c, idx, nib, instr_addr))
-        instr_addr += 1  # same addr for entire group
+        if char not in instr_addr_map:
+            instr_addr_map[idx] = addr_counter
+        for pc in PC_MAP[char]:
+            instr_map.append((char, idx, pc, instr_addr_map[idx]))
+            addr_counter += 1
 
-    # Pass 3: encode instructions with real jump targets
+    # Final hex encoding
     hex_lines = []
-    for (char, idx, nibble, addr) in instr_map:
-        if char in '[]' and idx in bracket_map:
-            match_idx = bracket_map[idx]
-            match_addr = next(a for a in instr_map if a[1] == match_idx)[3]
-            encoded = encode_command_with_nibble(nibble, match_addr)
+    for (char, src_idx, pc, addr) in instr_map:
+        if char in "[]":
+            match_idx = bracket_map[src_idx]
+            match_addr = instr_addr_map[match_idx]
+            encoded = encode_command(pc, match_addr)
         else:
-            encoded = encode_command_with_nibble(nibble, addr)
+            encoded = encode_command(pc, addr)
         hex_lines.append(f"0x{encoded:08X}")
 
     return hex_lines
 
-# Generate hex instructions
-hex_lines = bf_to_nibble_hex_grouped(bf_code_clean)
+def main():
+    # Sample Hello World program in Brainfuck
+    hello_world_bf = """
+    ++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++. .+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.
+    """
 
-# Print to console
-for line in hex_lines:
-    print(line)
+    try:
+        hex_lines = bf_to_hex_encoded(hello_world_bf)
 
-# Optionally save to file
-with open("hello_world_bf_grouped.hex", "w") as f:
-    f.write('\n'.join(hex_lines))
+        with open("hello_world_bf_grouped.hex", "w") as f:
+            for line in hex_lines:
+                f.write(line + "\n")
+
+        print("✅ Hex encoding complete.")
+        print("📄 Output written to hello_world_bf_grouped.hex")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+if __name__ == "__main__":
+    main()
