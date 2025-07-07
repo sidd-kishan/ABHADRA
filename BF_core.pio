@@ -6,10 +6,10 @@
 ; Repeatedly get one word of data from the TX FIFO, stalling when the FIFO is
 ; empty. Write the least significant bit to the OUT pin group.
 instruction_at_pc_zero_which_is_closing_sq_bracket:
-jmp ~x, goto_wrap
+jmp !x, goto_wrap
 jmp go_to_start_of_the_loop
 instruction_at_pc_two_which_is_starting_sq_bracket:
-jmp ~x, go_to_throw_away_loop_till_the_end_of_loop
+jmp !x, go_to_throw_away_loop_till_the_end_of_loop
 jmp goto_wrap
 instruction_at_pc_four_which_substract_one_from_data_which_is_x:
 jmp x--,goto_wrap
@@ -43,7 +43,7 @@ go_to_throw_away_loop_till_the_end_of_loop:
 pull
 out x,5
 jmp !x, goto_wrap
-jmp  go_to_throw_away_loop_till_the_end_of_loop
+jmp go_to_throw_away_loop_till_the_end_of_loop
 send_from_x:
 mov osr,x
 send_from_x_to_mem:
