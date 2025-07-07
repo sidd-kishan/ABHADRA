@@ -42,8 +42,8 @@ jmp goto_wrap
 go_to_throw_away_loop_till_the_end_of_loop:
 pull
 out x,5
-jmp !x,goto_wrap 
-jmp go_to_throw_away_loop_till_the_end_of_loop
+jmp !x, go_to_throw_away_loop_till_the_end_of_loop
+jmp goto_wrap 
 send_from_x:
 mov osr,x
 send_from_x_to_mem:
