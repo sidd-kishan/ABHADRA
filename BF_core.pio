@@ -13,16 +13,15 @@ jmp ~x, go_to_throw_away_loop_till_the_end_of_loop
 jmp goto_wrap
 instruction_at_pc_four_which_substract_one_from_data_which_is_x:
 jmp x--,goto_wrap
+jmp goto_wrap
 instruction_at_pc_five_which_bit_flips_data_which_is_x_if_previous_instruction_falls_thrrough_wrap_arround_or_overflow_handelling_is_observed:
 mov x,~x
 jmp goto_wrap
 instruction_at_pc_seven_which_substract_one_from_tape_address_which_is_y:
 jmp y--,goto_wrap
+jmp goto_wrap
 instruction_at_pc_eight_which_bit_flips_tape_address_which_is_y_if_previous_instruction_falls_thrrough_wrap_arround_or_overflow_handelling_is_observed:
 mov y,~y
-jmp goto_wrap
-bit_reversed_x_register:
-mov x,::x
 jmp goto_wrap
 send_from_y:
 mov osr,y
