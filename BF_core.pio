@@ -7,9 +7,9 @@
 ; empty. Write the least significant bit to the OUT pin group.
 instruction_at_pc_zero_which_is_closing_sq_bracket:
 jmp !x, goto_wrap
-jmp go_to_start_of_the_loop
+jmp go_to_respective_part_of_the_loop
 instruction_at_pc_two_which_is_starting_sq_bracket:
-jmp !x, go_to_throw_away_loop_till_the_end_of_loop
+jmp !x, go_to_respective_part_of_the_loop
 jmp goto_wrap
 instruction_at_pc_four_which_substract_one_from_data_which_is_x:
 jmp x--,goto_wrap
@@ -25,30 +25,31 @@ mov y,~y
 jmp goto_wrap
 send_from_y:
 mov osr,y
-send_from_y_to_mem:
-out pins,1
-jmp ~osre,send_from_y_to_mem
-jmp goto_wrap
+jmp send_from_osr_to_mem
 bring_into_x:
 set x,31
-bring_into_x_reg:
+bring_in:
 in pins,1
-jmp x--,bring_into_x_reg
+jmp x--,bring_in
+jmp goto_wrap
+send_brought_in_to_x:
 mov x,isr
 jmp goto_wrap
-go_to_start_of_the_loop:
-in osr,26
+send_brought_in_to_y:
+mov y,isr
 jmp goto_wrap
-go_to_throw_away_loop_till_the_end_of_loop:
+go_to_respective_part_of_the_loop:
+in osr,27
+jmp goto_wrap
+go_to_exec_loop:
 pull
-out x,5
-jmp !x, goto_wrap
-jmp go_to_throw_away_loop_till_the_end_of_loop
+out exec, 16
+jmp go_to_exec_loop
 send_from_x:
 mov osr,x
-send_from_x_to_mem:
+send_from_osr_to_mem:
 out pins,1
-jmp ~osre,send_from_x_to_mem
+jmp ~osre,send_from_osr_to_mem
 goto_wrap:
 .wrap_target
 pull
