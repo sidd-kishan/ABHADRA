@@ -16,7 +16,7 @@ PC_MAP = {
     ']': [0],               # loop end
     '.': [24],              # print from x
     ',': [24],              # input into x
-    'send_from_y': [12],
+    'send_from_y': [12,28],
     'send_from_x': [27],
     'bring_into_x': [14,18],
     'bring_into_y': [14,20],
