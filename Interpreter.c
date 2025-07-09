@@ -17,8 +17,8 @@
 
 static const uint16_t Abhadra_Interpreter_program_instructions[] = {
     0x003e, //  0: jmp    !x, 30                     
-    0x0015, //  1: jmp    21                         
-    0x0037, //  2: jmp    !x, 23                     
+    0x0016, //  1: jmp    22                         
+    0x0036, //  2: jmp    !x, 22                     
     0x001e, //  3: jmp    30                         
     0x005e, //  4: jmp    x--, 30                    
     0x001e, //  5: jmp    30                         
@@ -29,20 +29,20 @@ static const uint16_t Abhadra_Interpreter_program_instructions[] = {
     0xa04a, // 10: mov    y, !y                      
     0x001e, // 11: jmp    30                         
     0xa0e2, // 12: mov    osr, y                     
-    0x6001, // 13: out    pins, 1                    
-    0x00ed, // 14: jmp    !osre, 13                  
-    0x001e, // 15: jmp    30                         
-    0xe03f, // 16: set    x, 31                      
-    0x4001, // 17: in     pins, 1                    
-    0x0051, // 18: jmp    x--, 17                    
-    0xa026, // 19: mov    x, isr                     
-    0x001e, // 20: jmp    30                         
-    0x40fa, // 21: in     osr, 26                    
-    0x001e, // 22: jmp    30                         
-    0x80a0, // 23: pull   block                      
-    0x6025, // 24: out    x, 5                       
-    0x003e, // 25: jmp    !x, 30                     
-    0x0017, // 26: jmp    23                         
+    0x001c, // 13: jmp    28                         
+    0xe03f, // 14: set    x, 31                      
+    0x4001, // 15: in     pins, 1                    
+    0x004f, // 16: jmp    x--, 15                    
+    0x001e, // 17: jmp    30                         
+    0xa026, // 18: mov    x, isr                     
+    0x001e, // 19: jmp    30                         
+    0xa046, // 20: mov    y, isr                     
+    0x001e, // 21: jmp    30                         
+    0x40fb, // 22: in     osr, 27                    
+    0x001e, // 23: jmp    30                         
+    0x80a0, // 24: pull   block                      
+    0x60f0, // 25: out    exec, 16                   
+    0x0018, // 26: jmp    24                         
     0xa0e1, // 27: mov    osr, x                     
     0x6001, // 28: out    pins, 1                    
     0x00fc, // 29: jmp    !osre, 28                  
