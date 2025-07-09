@@ -128,7 +128,7 @@ def bf_to_hex_optimized(bf_code: str, suppress: bool = True) -> List[str]:
 
 # Example usage
 if __name__ == "__main__":
-    test_bf = ">>>"
+    test_bf = "+[]"
     hex_output = bf_to_hex_optimized(test_bf, suppress=SUPPRESS_POINTER_READ_WRITE)
     for h in hex_output:
         print("fifo -p 0 -s 0 -t -e -v "+h)
