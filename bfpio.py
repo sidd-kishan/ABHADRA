@@ -14,11 +14,12 @@ PC_MAP = {
     '-': [4],               # x--
     '[': [2],               # loop start
     ']': [0],               # loop end
-    '.': [27],              # print from x
-    ',': [16],              # input into x
+    '.': [24],              # print from x
+    ',': [24],              # input into x
     'send_from_y': [12],
     'send_from_x': [27],
-    'bring_into_x': [16],
+    'bring_into_x': [14,18],
+    'bring_into_y': [14,20],
 }
 
 def encode_command(pc: int, address: int) -> int:
