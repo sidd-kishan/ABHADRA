@@ -250,3 +250,5 @@ isr	32 bits	Input shift register — used for reading data from GPIO
 
 The `bfpio.py` script converts Brainfuck programs into 32-bit hexadecimal instructions suitable for direct execution on the **RP2040’s PIO (Programmable I/O)** state machines. This serves as the compiler frontend for the hardware-only Brainfuck interpreter called **Abhadra**.
 
+# ChatGPT Discussion
+https://chatgpt.com/s/t_6918b18e84ec81919d8e7fdf2b468d3e
