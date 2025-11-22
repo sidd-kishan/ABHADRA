@@ -12,12 +12,12 @@
 // Abhadra_Interpreter_program_instructions //
 // ---------------------------------------- //
 
-#define Abhadra_Interpreter_program_instructions_wrap_target 18
-#define Abhadra_Interpreter_program_instructions_wrap 19
+#define Abhadra_Interpreter_program_instructions_wrap_target 20
+#define Abhadra_Interpreter_program_instructions_wrap 21
 
 static const uint16_t Abhadra_Interpreter_program_instructions_program_instructions[] = {
     0x0030, //  0: jmp    !x, 16                     
-    0x0010, //  1: jmp    16                         
+    0x0012, //  1: jmp    18                         
     0x0044, //  2: jmp    x--, 4                     
     0xa029, //  3: mov    x, !x                      
     0x60a5, //  4: out    pc, 5                      
@@ -32,18 +32,20 @@ static const uint16_t Abhadra_Interpreter_program_instructions_program_instructi
     0x60a5, // 13: out    pc, 5                      
     0x40c1, // 14: in     isr, 1                     
     0x60a5, // 15: out    pc, 5                      
-    0x6001, // 16: out    pins, 1                    
-    0x00f0, // 17: jmp    !osre, 16                  
+    0x40fb, // 16: in     osr, 27                    
+    0x8020, // 17: push   block                      
+    0x6001, // 18: out    pins, 1                    
+    0x00f2, // 19: jmp    !osre, 18                  
             //     .wrap_target
-    0x80a0, // 18: pull   block                      
-    0x60a5, // 19: out    pc, 5                      
+    0x80a0, // 20: pull   block                      
+    0x60a5, // 21: out    pc, 5                      
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program Abhadra_Interpreter_program_instructions_program = {
     .instructions = Abhadra_Interpreter_program_instructions_program_instructions,
-    .length = 20,
+    .length = 22,
     .origin = -1,
 };
 
