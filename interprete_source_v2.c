@@ -9,16 +9,16 @@
 ; Repeatedly get one word of data from the TX FIFO, stalling when the FIFO is
 ; empty. Write the least significant bit to the OUT pin group.
 
-jmp !x,x_is_zero
-jmp x_is_not_zero
-jmp x--,x_decremented
-mov x,~x
+jmp !x,x_is_zero; decides if x register is zero or not
+jmp x_is_not_zero; this line of the code can be reached if the above address falls through
+jmp x--,x_decremented; if x is non zero before the decrement then the decrement is done and jump made
+mov x,~x; this line of the code can be reached if the above code allows to fall through as x being zero it also makes sure to wrap arround the x value a key feature in brain fuck or directly branched to take the complement of x in case of addition
 x_decremented:
-out pc,5
-jmp y--,y_decremented
-mov y,~y
+out pc,5; this line of the code makes the branch to the next pc 
+jmp y--,y_decremented; if y is non zero before the decrement then the decrement is done and jump made
+mov y,~y; this line of the code can be reached if the above code allows to fall through as y being zero it also makes sure to wrap arround the y value a key feature in brain fuck or directly branched to take the complement of x in case of addition
 y_decremented:
-out pc,5
+out pc,5; this line of the code can be reached if the above code allows to fall through as x being zero it also makes sure to wrap arround the x value a key feature in brain fuck or directly branched to take the complement of x in case of addition
 in osr,16
 out pc,5
 mov x,isr
@@ -27,8 +27,10 @@ mov y,isr
 out pc,5
 in isr,1
 out pc,5
-x_is_not_zero:
 x_is_zero:
+in osr,27
+push
+x_is_not_zero:
 out_code:
 out pins,1
 jmp !osre,out_code
