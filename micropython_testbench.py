@@ -13,7 +13,7 @@ def blink():
     mov(x, osr)
     set(pins, 1)[x]
     set(pins, 0)[x]
-    in_(osr,16)
+    in_(osr,32)
     push()
     wrap()
 
@@ -26,13 +26,13 @@ sm.active(1)
 
 # Send data to the PIO's TX FIFO
 # The PIO program will pull these values and use them as delay counts
-sm.put(500) # Fast blink
+sm.put(500000000) # Fast blink
 time.sleep(1)
 print(sm.get())
-sm.put(100) # Slower blink
+sm.put(40000000000) # Slower blink
 time.sleep(1)
 print(sm.get())
-sm.put(1000) # Even slower blink
+sm.put(1000000) # Even slower blink
 time.sleep(1)
 print(sm.get())
 # Stop the state machine
