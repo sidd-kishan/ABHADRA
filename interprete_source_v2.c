@@ -20,12 +20,12 @@ jmp y--,decrement_y ; decrement y by 1
 decrement_y:
 mov y,~y
 out pc,4
-jmp move_y_to_external_memory
-jmp move_x_to_external_memory
-nop
-nop
-nop
-nop
+out y,16
+out pc,4
+out exec,16
+out pc,4
+out x,16
+out pc,4
 move_y_to_external_memory:
 mov osr,y
 start_transfer_for_y:
@@ -39,11 +39,12 @@ out pins,1
 jmp !osre,start_transfer_for_x
 jmp main
 bring_in_x_from_external_memory:
-set x,16
+; set x,16 needs to be done with the out x,16 instead to save one pio assembly space
 begin_input_for_x:
 in pins,1
 jmp x--,begin_input_for_x
 mov x,isr
+jmp main
 jump_to_the_address:
 in osr,28
 push
