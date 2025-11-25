@@ -8,23 +8,37 @@
 
 ; Repeatedly get one word of data from the TX FIFO, stalling when the FIFO is
 ; empty. Write the least significant bit to the OUT pin group.
+;this address which is 0x00 to execute [
 jmp !x,jump_to_the_address ; as x is zero goto to the end of the loop ]
 jmp main ; as x is not zero goahead with the execution of the loop [
+;this address which is 0x02 to execute ]
 jmp !x,main ; as x is zero loop starts [ and next instruction is executed
 jmp jump_to_the_address ; as the above instruction 
+;this address which is 0x04 to execute -
 jmp x--,decrement_x ; decrement x by 1
 decrement_x:
+;this address which is 0x05 to execute bit flip of x which can be used before and after the decrement of x to gain addition through 2's complemnt
 mov x,~x
+;this address which is 0x06 to change the program counter for the state machine with 4 bits
 out pc,4
+;this address which is 0x07 to execute <
 jmp y--,decrement_y ; decrement y by 1
 decrement_y:
+;this address which is 0x08 to execute bit flip of y which can be used before and after the decrement of y to gain addition through 2's complemnt
 mov y,~y
+;this address which is 0x09 to change the program counter for the state machine with 4 bits
 out pc,4
+;this address which is 0x0a to output 16 bits from osr to y
 out y,16
+;this address which is 0x0b to change the program counter for the state machine with 4 bits
 out pc,4
-out exec,16 ; this is arbitrary execution word which can be used to reach parts of the code that are beyond address 0x0f or any other pio assembly
+;this address which is 0x0c to arbitrarily execute a word which can be used to reach parts of the code that are beyond address 0x0f or any other pio assembly
+out exec,16 
+;this address which is 0x0d to change the program counter for the state machine with 4 bits
 out pc,4
+;this address which is 0x0e to output 16 bits from osr to x
 out x,16
+;this address which is 0x0f to change the program counter for the state machine with 4 bits
 out pc,4
 move_y_to_external_memory:
 mov osr,y
