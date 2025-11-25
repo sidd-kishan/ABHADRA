@@ -4,39 +4,53 @@
 ; SPDX-License-Identifier: BSD-3-Clause
 ;
 
-.program Abhadra_Interpreter_program_instructions
+.program hello
 
 ; Repeatedly get one word of data from the TX FIFO, stalling when the FIFO is
 ; empty. Write the least significant bit to the OUT pin group.
-
-jmp !x,x_is_zero; decides if x register is zero or not
-jmp x_is_not_zero; this line of the code can be reached if the above address falls through
-jmp x--,x_decremented; if x is non zero before the decrement then the decrement is done and jump made
-mov x,~x; this line of the code can be reached if the above code allows to fall through as x being zero it also makes sure to wrap arround the x value a key feature in brain fuck or directly branched to take the complement of x in case of addition
-x_decremented:
-out pc,5; this line of the code makes the branch to the next pc 
-jmp y--,y_decremented; if y is non zero before the decrement then the decrement is done and jump made
-mov y,~y; this line of the code can be reached if the above code allows to fall through as y being zero it also makes sure to wrap arround the y value a key feature in brain fuck or directly branched to take the complement of x in case of addition
-y_decremented:
-out pc,5; this line of the code can be reached if the above code allows to fall through as x being zero it also makes sure to wrap arround the x value a key feature in brain fuck or directly branched to take the complement of x in case of addition
-in osr,16
-out pc,5
-mov x,isr
-out pc,5
-mov y,isr
-out pc,5
-in isr,1
-out pc,5
-x_is_zero:
-in osr,27
-push
-x_is_not_zero:
-out_code:
+jmp !x,jump_to_the_address ; as x is zero goto to the end of the loop ]
+jmp main ; as x is not zero goahead with the execution of the loop [
+jmp !x,main ; as x is zero loop starts [ and next instruction is executed
+jmp jump_to_the_address ; as the above instruction 
+jmp x--,decrement_x ; decrement x by 1
+decrement_x:
+mov x,~x
+out pc,4
+jmp y--,decrement_y ; decrement y by 1
+decrement_y:
+mov y,~y
+out pc,4
+jmp move_y_to_external_memory
+jmp move_x_to_external_memory
+nop
+nop
+nop
+nop
+move_y_to_external_memory:
+mov osr,y
+start_transfer_for_y:
 out pins,1
-jmp !osre,out_code
+jmp !osre,start_transfer_for_y
+jmp main
+move_x_to_external_memory:
+mov osr,x
+start_transfer_for_x:
+out pins,1
+jmp !osre,start_transfer_for_x
+jmp main
+bring_in_x_from_external_memory:
+set x,16
+begin_input_for_x:
+in pins,1
+jmp x--,begin_input_for_x
+mov x,isr
+jump_to_the_address:
+in osr,28
+push
+main:
 .wrap_target
 pull
-out pc,5
+out pc, 4
 .wrap
 
 % c-sdk {
