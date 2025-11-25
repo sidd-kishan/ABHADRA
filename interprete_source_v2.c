@@ -22,7 +22,7 @@ mov y,~y
 out pc,4
 out y,16
 out pc,4
-out exec,16
+out exec,16 ; this is arbitrary execution word which can be used to reach parts of the code that are beyond address 0x0f or any other pio assembly
 out pc,4
 out x,16
 out pc,4
