@@ -22,7 +22,8 @@ def blink():
     set(x,8)		   #0e
     in_(x,4)		   #0f
     push()
-    set(x,0)
+    out(null,5)
+    jmp(not_osre,"next_instruction")
     nop()
     nop()
     nop()
@@ -34,8 +35,7 @@ def blink():
     nop()
     nop()
     nop()
-    out(null,5)
-    jmp(not_osre,"next_instruction")
+    nop()
     wrap_target()
     pull()
     label("next_instruction")
