@@ -2,54 +2,70 @@ import rp2
 from machine import Pin
 
 
-def pack_pio_jumps(pc1_index: int, pc2_index: int, pc3_index: int, pc4_index: int, pc5_index: int, pc6_index: int) -> int:
+def pack_pio_jumps(**kwargs) -> int:
     """
-    Packs six 5-bit PIO Program Counter (PC) jump targets into a single 32-bit word.
+    Packs jump targets and data into a single 32-bit word, supporting two formats.
 
-    This function assumes:
-    1. The PIO state machine uses 'out(pc, 5)' to read the jump addresses.
-    2. The addresses are shifted out from LSB to MSB (SHIFT_RIGHT).
-    3. The absolute program offset is 11 (0x0B). This offset is added to each relative PC index.
+    Format 1 (JUMPS_6_X_5): 0x{unused - 2 bits}{pc6 - 5 bits}...{pc1 - 5 bits}
+    Format 2 (DATA_16_JUMPS_3): 0x{unused - 1 bit}{pc3 - 5 bits}{pc2 - 5 bits}{data - 16 bits}{pc1 - 5 bits}
 
-    Args:
-        pcN_index: The relative index (0-15) of the instruction to jump to.
+    Args (via kwargs):
+        For Format 1: pc1, pc2, pc3, pc4, pc5, pc6 (0-15)
+        For Format 2: pc1, data (0-65535), pc2, pc3 (0-15)
 
     Returns:
-        The single 32-bit integer ready to be sent to the PIO TX FIFO via sm.put().
+        The single 32-bit integer for sm.put().
     """
     
-    # 1. Define the program offset (where the main instruction block starts in PIO memory)
-    # This must be added to the relative index (0-15) to get the absolute address (11-26).
-    # PROGRAM_OFFSET = 11
+    packed_word = 0
+    
+    # --- Format 2 Check: If 'data' is provided, use the 3 Jumps + Data format ---
+    if 'data' in kwargs:
+        pc1 = kwargs.get('pc1', 0)
+        pc2 = kwargs.get('pc2', 0)
+        pc3 = kwargs.get('pc3', 0)
+        data = kwargs.get('data', 0)
 
-    # 2. Input Validation (Ensure all indices are within the 0-15 range)
-    indices = [pc1_index, pc2_index, pc3_index, pc4_index, pc5_index, pc6_index]
-    for i, pc in enumerate(indices, 1):
-        if not (0 <= pc <= 15):
-            raise ValueError(f"PC target {i} ({pc}) is outside the valid range (0-15).")
+        # Validation
+        if not (0 <= pc1 <= 15 and 0 <= pc2 <= 15 and 0 <= pc3 <= 15):
+             raise ValueError("Format 2: PC targets must be between 0 and 15.")
+        if not (0 <= data <= 65535):
+             raise ValueError("Format 2: Data field must be between 0 and 65535 (16 bits).")
 
-    # 3. Calculate the absolute addresses
-    # This is necessary because 'out(pc, 5)' jumps to the absolute address stored in the OSR.
-    abs_pc1 = pc1_index #+ PROGRAM_OFFSET
-    abs_pc2 = pc2_index #+ PROGRAM_OFFSET
-    abs_pc3 = pc3_index #+ PROGRAM_OFFSET
-    abs_pc4 = pc4_index #+ PROGRAM_OFFSET
-    abs_pc5 = pc5_index #+ PROGRAM_OFFSET
-    abs_pc6 = pc6_index #+ PROGRAM_OFFSET
+        # Packing Formula: 0x{unused - 1 bit}{pc3 - 5 bits}{pc2 - 5 bits}{data - 16 bits}{pc1 - 5 bits}
+        # Total bits used: 5 (PC1) + 16 (Data) + 5 (PC2) + 5 (PC3) = 31 bits.
+        packed_word = (
+            (pc1 << 0)    |  # PC1: Bits 0-4 (LSB)
+            (data << 5)   |  # Data: Bits 5-20
+            (pc2 << 21)   |  # PC2: Bits 21-25
+            (pc3 << 26)      # PC3: Bits 26-30
+        )
+        return packed_word
 
-    # 4. Pack the 5-bit addresses into the 32-bit word using bit shifting and bitwise OR
-    # PC1 is shifted by 0 (LSBs), PC2 by 5, PC3 by 10, etc., up to PC6 by 25.
-    # The final 2 bits (bits 30 and 31) are left unused (0).
-    packed_word = (
-        (abs_pc1 << 0)   |  # Bits 0-4
-        (abs_pc2 << 5)   |  # Bits 5-9
-        (abs_pc3 << 10)  |  # Bits 10-14
-        (abs_pc4 << 15)  |  # Bits 15-19
-        (abs_pc5 << 20)  |  # Bits 20-24
-        (abs_pc6 << 25)     # Bits 25-29
-    )
+    # --- Format 1: Default to 6 Jumps format if 'data' is not provided ---
+    else:
+        # Expected keys: pc1 to pc6 (all 5-bit fields, 0-15)
+        pcs = [
+            kwargs.get('pc1', 0), kwargs.get('pc2', 0), kwargs.get('pc3', 0),
+            kwargs.get('pc4', 0), kwargs.get('pc5', 0), kwargs.get('pc6', 0)
+        ]
 
-    return packed_word
+        # Validation
+        #for i, pc in enumerate(pcs, 1):
+        #    if not (0 <= pc <= 15):
+        #        raise ValueError(f"Format 1: PC target {i} ({pc}) is outside the valid range (0-15).")
+        
+        # Packing Formula: PC_N << (5 * (N-1))
+        # PC1: bits 0-4, PC6: bits 25-29. Bits 30-31 unused.
+        packed_word = (
+            (pcs[0] << 0)   |  # PC1
+            (pcs[1] << 5)   |  # PC2
+            (pcs[2] << 10)  |  # PC3
+            (pcs[3] << 15)  |  # PC4
+            (pcs[4] << 20)  |  # PC5
+            (pcs[5] << 25)     # PC6
+        )
+        return packed_word
 
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
@@ -107,10 +123,10 @@ def program(istructs):
     print(hex(sm.get()))
     #machine.reset()
 
-pc_targets = [0, 2, 4, 6, 8, 10]
-
+pc_targets = {'pc1': 0, 'pc2': 2, 'pc3': 4, 'pc4': 6, 'pc5': 8, 'pc6': 10}#{'pc1': 0x0d, 'data': 0xC0DE, 'pc2': 0x00, 'pc3': 0x08}
+word = pack_pio_jumps(**pc_targets)
 # Calculate the packed word
-word = pack_pio_jumps(*pc_targets)
+#word = pack_pio_jumps(*pc_targets)
 
 # Print the results in decimal and hexadecimal format
 print(f"--- PIO Jump Packer Results ---")
@@ -122,4 +138,5 @@ program(word)
 
 sm.active(0)
 #machine.reset()
+
 
