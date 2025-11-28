@@ -27,10 +27,10 @@ def pack_pio_jumps(**kwargs) -> int:
         data = kwargs.get('data', 0)
 
         # Validation
-        if not (0 <= pc1 <= 15 and 0 <= pc2 <= 15 and 0 <= pc3 <= 15):
-             raise ValueError("Format 2: PC targets must be between 0 and 15.")
-        if not (0 <= data <= 65535):
-             raise ValueError("Format 2: Data field must be between 0 and 65535 (16 bits).")
+        #if not (0 <= pc1 <= 15 and 0 <= pc2 <= 15 and 0 <= pc3 <= 15):
+        #     raise ValueError("Format 2: PC targets must be between 0 and 15.")
+        #if not (0 <= data <= 65535):
+        #     raise ValueError("Format 2: Data field must be between 0 and 65535 (16 bits).")
 
         # Packing Formula: 0x{unused - 1 bit}{pc3 - 5 bits}{pc2 - 5 bits}{data - 16 bits}{pc1 - 5 bits}
         # Total bits used: 5 (PC1) + 16 (Data) + 5 (PC2) + 5 (PC3) = 31 bits.
@@ -70,9 +70,9 @@ def pack_pio_jumps(**kwargs) -> int:
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
 def blink():
-    set(x,1)           #00
-    in_(x,4)           #01
-    set(x,2)		   #02
+    jmp(x_dec,"remove_inst_and_jmp")           #00
+    mov(x,invert(x))           #01
+    jmp("remove_inst_and_jmp")		   #02
     in_(x,4)		   #03
     set(x,3)		   #04
     in_(x,4)		   #05
@@ -83,9 +83,10 @@ def blink():
     set(x,6)		   #0a
     in_(x,4)		   #0b
     set(x,7)		   #0c
-    in_(x,4)		   #0d
-    set(x,8)		   #0e
-    in_(x,4)		   #0f
+    out(null,5)		   #0d
+    out(x,16)		   #0e
+    label("remove_inst_and_jmp")
+    in_(x,16)		   #0f
     push()
     out(null,5)
     jmp(not_osre,"next_instruction")
@@ -116,14 +117,14 @@ def program(istructs):
     sm.put(word)
     print(hex(sm.get()))
     print(hex(sm.get()))
-    print(hex(sm.get()))
-    print(hex(sm.get()))
-    print(hex(sm.get()))
-    print(hex(sm.get()))
-    print(hex(sm.get()))
+    #print(hex(sm.get()))
+    #print(hex(sm.get()))
+    #print(hex(sm.get()))
+    #print(hex(sm.get()))
+    #print(hex(sm.get()))
     #machine.reset()
 
-pc_targets = {'pc1': 0, 'pc2': 2, 'pc3': 4, 'pc4': 6, 'pc5': 8, 'pc6': 10}#{'pc1': 0x0d, 'data': 0xC0DE, 'pc2': 0x00, 'pc3': 0x08}
+pc_targets = {'pc1': 0x0d, 'data': 0xC0DE, 'pc2': 0x00, 'pc3': 0x00}
 word = pack_pio_jumps(**pc_targets)
 # Calculate the packed word
 #word = pack_pio_jumps(*pc_targets)
