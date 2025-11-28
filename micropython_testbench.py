@@ -93,9 +93,9 @@ def blink():
 
 # Instantiate a state machine with the blink program, at 2000Hz, with set bound to Pin(25) (LED on the Pico board)
 sm = rp2.StateMachine(0, blink, freq=2000, set_base=Pin(25),out_shiftdir=rp2.PIO.SHIFT_RIGHT)
-
+sm.active(1)
+    
 def program(istructs):
-    sm.active(1)
     print(hex(sm.get())) # gives 1 as output as the program executes from the top and set 1 in the queue
     sm.put(word)
     print(hex(sm.get()))
@@ -105,7 +105,6 @@ def program(istructs):
     print(hex(sm.get()))
     print(hex(sm.get()))
     print(hex(sm.get()))
-    sm.active(0)
     #machine.reset()
 
 pc_targets = [0, 2, 4, 6, 8, 10]
@@ -120,3 +119,7 @@ print(f"Packed 32-bit Word (Decimal): {word}")
 print(f"Packed 32-bit Word (Hex): 0x{word:08X}")
 
 program(word)
+
+sm.active(0)
+#machine.reset()
+
