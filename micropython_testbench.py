@@ -70,43 +70,42 @@ def pack_pio_jumps(**kwargs) -> int:
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
 def blink():
-    jmp(x_dec,"remove_inst_and_jmp")           #00
-    mov(x,invert(x))           #01
-    jmp("remove_inst_and_jmp")		   #02
-    in_(x,4)		   #03
-    set(x,3)		   #04
-    in_(x,4)		   #05
-    set(x,4)		   #06
-    in_(x,4)		   #07
-    set(x,5)		   #08
-    in_(x,4)		   #09
-    set(x,6)		   #0a
-    in_(x,4)		   #0b
-    set(x,7)		   #0c
-    out(null,5)		   #0d
-    out(x,16)		   #0e
-    label("remove_inst_and_jmp")
-    in_(x,16)		   #0f
-    push()
-    out(null,5)
-    jmp(not_osre,"next_instruction")
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    label("nop_label")
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
     wrap_target()
+    label("restart_loop")
     pull()
     label("next_instruction")
     mov(pc,osr)
     wrap()
+    set(x,1)
+    in_(x,4)
+    set(x,2)
+    in_(x,4)
+    set(x,3)
+    in_(x,4)
+    set(x,4)
+    in_(x,4)
+    set(x,5)
+    in_(x,4)
+    set(x,6)
+    in_(x,4)
+    set(x,7)
+    in_(x,4)
+    set(x,8)
+    in_(x,4)
+    push()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    nop()
+    out(null,5)
+    jmp(not_osre, "next_instruction")
+    jmp("restart_loop")
 
 # Instantiate a state machine with the blink program, at 2000Hz, with set bound to Pin(25) (LED on the Pico board)
 sm = rp2.StateMachine(0, blink, freq=2000, set_base=Pin(25),out_shiftdir=rp2.PIO.SHIFT_RIGHT)
@@ -117,27 +116,37 @@ def program(istructs):
     sm.put(word)
     print(hex(sm.get()))
     print(hex(sm.get()))
-    #print(hex(sm.get()))
+    print(hex(sm.get()))
     #print(hex(sm.get()))
     #print(hex(sm.get()))
     #print(hex(sm.get()))
     #print(hex(sm.get()))
     #machine.reset()
 
-pc_targets = {'pc1': 0x0d, 'data': 0xC0DE, 'pc2': 0x00, 'pc3': 0x00}
-word = pack_pio_jumps(**pc_targets)
-# Calculate the packed word
-#word = pack_pio_jumps(*pc_targets)
+#pc_targets = {'pc1': 16, 'data': 0xC0DE, 'pc2': 8, 'pc3': 7}
+#word = pack_pio_jumps(**pc_targets)
 
 # Print the results in decimal and hexadecimal format
-print(f"--- PIO Jump Packer Results ---")
-print(f"Input PC Targets (Relative Index): {pc_targets}")
-print(f"Packed 32-bit Word (Decimal): {word}")
-print(f"Packed 32-bit Word (Hex): 0x{word:08X}")
+#print(f"--- PIO Jump Packer Results ---")
+#print(f"Input PC Targets (Relative Index): {pc_targets}")
+#print(f"Packed 32-bit Word (Decimal): {word}")
+#print(f"Packed 32-bit Word (Hex): 0x{word:08X}")
 
-program(word)
-
+#print(hex(sm.get())) # gives 1 as output as the program executes from the top and set 1 in the queue
+#sm.put(word)
+#print(hex(sm.get()))
+#print(hex(sm.get()))
+#print(hex(sm.get()))
+pc_targets = {'pc1': 2, 'pc2': 4, 'pc3': 6, 'pc4': 8, 'pc5': 10}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+print(hex(sm.get()))
+print(hex(sm.get()))
+print(hex(sm.get()))
+print(hex(sm.get()))
+#print(hex(sm.get()))
+#print(hex(sm.get()))
 sm.active(0)
 #machine.reset()
-
 
