@@ -69,7 +69,7 @@ def pack_pio_jumps(**kwargs) -> int:
 
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
-def blink():
+def abhadra():
     wrap_target()							# address: N/A - Interpreter Begins main loop starts does not consume any pio assembly spot
     label("restart_loop")					# address: N/A - label to start the main loop does not consume any pio assembly spot
     pull()									# address: 0   - The 1 element of 32 bits are pulled from the RX Fifo consumes 1 spot in the pio assembly memory
@@ -87,22 +87,28 @@ def blink():
     jmp("consume_n_move_ahead")				# address: 10
     jmp(not_x,"consume_n_move_ahead")		# address: 11
     jmp("return_to_the_start_of_the_loop")	# address: 12
-    set(x,7)								# address: 13
-    in_(x,4)								# address: 14
-    set(x,8)								# address: 15
-    in_(x,4)								# address: 16
-    push()									# address: 17
-    nop()									# address: 18
-    nop()									# address: 19
-    nop()									# address: 20
-    nop()									# address: 21
+    jmp(x_dec,"flip_x")						# address: 13
+    label("flip_x")
+    mov(x,invert(x))						# address: 14
+    jmp("consume_n_move_ahead")				# address: 15
+    jmp(y_dec,"flip_x")						# address: 16
+    label("flip_y")
+    mov(y,invert(y))						# address: 17
+    jmp("consume_n_move_ahead")				# address: 18
+    label("return_to_the_start_of_the_loop")
+    label("skip_the_loop")
+    in_(osr,27)								# address: 19
+    push()									# address: 20
+    jmp("consume_n_move_ahead")				# address: 21
     nop()									# address: 22
     nop()									# address: 23
-    nop()									# address: 24
-    nop()									# address: 25
-    nop()									# address: 26
-    nop()									# address: 27
-    nop()									# address: 28
+    in_(pins,1)								# address: 24
+    label("in_to_memory")
+    jmp(x_dec,"out_to_memory")				# address: 25
+    jmp("consume_n_move_ahead")				# address: 26
+    label("out_to_memory")
+    out(pins,1)								# address: 27
+    jmp(x_dec,"out_to_memory")				# address: 28
     label("consume_n_move_ahead")			# address: N/A
     out(null,5)								# address: 29
     label("move_ahead")						# address: N/A
@@ -110,7 +116,7 @@ def blink():
     jmp("restart_loop")						# address: 31
 
 # Instantiate a state machine with the blink program, at 2000Hz, with set bound to Pin(25) (LED on the Pico board)
-sm = rp2.StateMachine(0, blink, freq=2000, set_base=Pin(25),out_shiftdir=rp2.PIO.SHIFT_RIGHT)
+sm = rp2.StateMachine(0, abhadra, freq=2000, set_base=Pin(25),out_shiftdir=rp2.PIO.SHIFT_RIGHT)
 sm.active(1)
     
 def program(istructs):
@@ -156,4 +162,5 @@ print(hex(sm.get()))
 #print(hex(sm.get()))
 sm.active(0)
 #machine.reset()
+
 
