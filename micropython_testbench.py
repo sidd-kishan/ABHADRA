@@ -81,6 +81,7 @@ def abhadra():
     jmp("move_ahead")						# address: 4
     in_(x,32)								# address: 5
     jmp("consume_n_move_ahead")				# address: 6
+    label("just_push")
     push()									# address: 7
     jmp("consume_n_move_ahead")				# address: 8
     jmp(not_x,"skip_the_loop")				# address: 9
@@ -98,10 +99,11 @@ def abhadra():
     label("return_to_the_start_of_the_loop")
     label("skip_the_loop")
     in_(osr,27)								# address: 19
-    push()									# address: 20
-    jmp("consume_n_move_ahead")				# address: 21
-    nop()									# address: 22
-    nop()									# address: 23
+    jmp("just_push")						# address: 20
+    label("arbitrary_execute")
+    out(null,5)								# address: 21
+    out(exec,16)							# address: 22
+    jmp("move_ahead")						# address: 23
     in_(pins,1)								# address: 24
     label("in_to_memory")
     jmp(x_dec,"out_to_memory")				# address: 25
