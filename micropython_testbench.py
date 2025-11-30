@@ -76,25 +76,25 @@ def abhadra():
     label("next_instruction")				# address: N/A - label marks the jump to the 5 bit address in the pio program does not consume any pio assembly spot
     mov(pc,osr)								# address: 1   - This makes the jump based on 5 bits in the osr and branches to the perticular section of the pio asm program
     wrap()									# address: N/A - 
-    out(null,5)								# address: 2
-    out(x,16)								# address: 3
+    out(null,5)								# address: 2   - strips 5 bits
+    out(x,16)								# address: 3   - x = 16 bits from osr
     jmp("move_ahead")						# address: 4
     in_(x,32)								# address: 5
     jmp("consume_n_move_ahead")				# address: 6
     label("just_push")
     push()									# address: 7
     jmp("consume_n_move_ahead")				# address: 8
-    jmp(not_x,"skip_the_loop")				# address: 9
+    jmp(not_x,"skip_the_loop")				# address: 9   - [ loop begins for BF
     jmp("consume_n_move_ahead")				# address: 10
-    jmp(not_x,"consume_n_move_ahead")		# address: 11
+    jmp(not_x,"consume_n_move_ahead")		# address: 11  - ] loop ends for BF
     jmp("return_to_the_start_of_the_loop")	# address: 12
-    jmp(x_dec,"flip_x")						# address: 13
+    jmp(x_dec,"flip_x")						# address: 13  - - x decrement for BF
     label("flip_x")
-    mov(x,invert(x))						# address: 14
+    mov(x,invert(x))						# address: 14  - invert x for 2 complements addition +
     jmp("consume_n_move_ahead")				# address: 15
-    jmp(y_dec,"flip_x")						# address: 16
+    jmp(y_dec,"flip_x")						# address: 16  - < y decrement for BF
     label("flip_y")
-    mov(y,invert(y))						# address: 17
+    mov(y,invert(y))						# address: 17  - invert y for 2 complements addition >
     jmp("consume_n_move_ahead")				# address: 18
     label("return_to_the_start_of_the_loop")
     label("skip_the_loop")
