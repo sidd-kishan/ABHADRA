@@ -79,7 +79,7 @@ def blink():
     out(null,5)
     out(x,16)
     jmp("move_ahead")
-    in_(x,16)
+    in_(x,32)
     jmp("consume_n_move_ahead")
     push()
     jmp("consume_n_move_ahead")
