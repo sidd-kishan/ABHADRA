@@ -70,44 +70,44 @@ def pack_pio_jumps(**kwargs) -> int:
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
 def blink():
-    wrap_target()
-    label("restart_loop")
-    pull()
-    label("next_instruction")
-    mov(pc,osr)
-    wrap()
-    out(null,5)
-    out(x,16)
-    jmp("move_ahead")
-    in_(x,32)
-    jmp("consume_n_move_ahead")
-    push()
-    jmp("consume_n_move_ahead")
-    set(x,5)
-    in_(x,4)
-    set(x,6)
-    in_(x,4)
-    set(x,7)
-    in_(x,4)
-    set(x,8)
-    in_(x,4)
-    push()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    nop()
-    label("consume_n_move_ahead")
-    out(null,5)
-    label("move_ahead")
-    jmp(not_osre, "next_instruction")
-    jmp("restart_loop")
+    wrap_target()							# address: N/A - Interpreter Begins main loop starts does not consume any pio assembly spot
+    label("restart_loop")					# address: N/A - label to start the main loop does not consume any pio assembly spot
+    pull()									# address: 0   - The 1 element of 32 bits are pulled from the RX Fifo consumes 1 spot in the pio assembly memory
+    label("next_instruction")				# address: N/A - label marks the jump to the 5 bit address in the pio program does not consume any pio assembly spot
+    mov(pc,osr)								# address: 1   - This makes the jump based on 5 bits in the osr and branches to the perticular section of the pio asm program
+    wrap()									# address: N/A - 
+    out(null,5)								# address: 2
+    out(x,16)								# address: 3
+    jmp("move_ahead")						# address: 4
+    in_(x,32)								# address: 5
+    jmp("consume_n_move_ahead")				# address: 6
+    push()									# address: 7
+    jmp("consume_n_move_ahead")				# address: 8
+    jmp(not_x,"skip_the_loop")				# address: 9
+    jmp("consume_n_move_ahead")				# address: 10
+    jmp(not_x,"consume_n_move_ahead")		# address: 11
+    jmp("return_to_the_start_of_the_loop")	# address: 12
+    set(x,7)								# address: 13
+    in_(x,4)								# address: 14
+    set(x,8)								# address: 15
+    in_(x,4)								# address: 16
+    push()									# address: 17
+    nop()									# address: 18
+    nop()									# address: 19
+    nop()									# address: 20
+    nop()									# address: 21
+    nop()									# address: 22
+    nop()									# address: 23
+    nop()									# address: 24
+    nop()									# address: 25
+    nop()									# address: 26
+    nop()									# address: 27
+    nop()									# address: 28
+    label("consume_n_move_ahead")			# address: N/A
+    out(null,5)								# address: 29
+    label("move_ahead")						# address: N/A
+    jmp(not_osre, "next_instruction")		# address: 30
+    jmp("restart_loop")						# address: 31
 
 # Instantiate a state machine with the blink program, at 2000Hz, with set bound to Pin(25) (LED on the Pico board)
 sm = rp2.StateMachine(0, blink, freq=2000, set_base=Pin(25),out_shiftdir=rp2.PIO.SHIFT_RIGHT)
