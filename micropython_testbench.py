@@ -1,5 +1,6 @@
 import rp2
 from machine import Pin
+import time
 
 
 def pack_pio_jumps(**kwargs) -> int:
@@ -8,19 +9,29 @@ def pack_pio_jumps(**kwargs) -> int:
 
     Format 1 (JUMPS_6_X_5): 0x{unused - 2 bits}{pc6 - 5 bits}...{pc1 - 5 bits}
     Format 2 (DATA_16_JUMPS_3): 0x{unused - 1 bit}{pc3 - 5 bits}{pc2 - 5 bits}{data - 16 bits}{pc1 - 5 bits}
+    Format 3 (ADDR_27_JUMP_1): 0x{addr - 27 bits}{pc1 - 5 bits}
 
     Args (via kwargs):
         For Format 1: pc1, pc2, pc3, pc4, pc5, pc6 (0-15)
         For Format 2: pc1, data (0-65535), pc2, pc3 (0-15)
+        For Format 3: pc1, addr (0-0xffffffE)
 
     Returns:
         The single 32-bit integer for sm.put().
     """
     
     packed_word = 0
-    
+    # --- Format 3 Check: If 'addr' is provided, use the 1 Jump + Addr format ---
+    if 'addr' in kwargs:
+        pc1 = kwargs.get('pc1', 0)
+        addr = kwargs.get('addr', 0)
+        packed_word = (
+            (pc1 << 0)    |  # PC1: Bits 0-4 (LSB)
+            (addr << 5)      # Data: Bits 5-31
+        )
+        return packed_word
     # --- Format 2 Check: If 'data' is provided, use the 3 Jumps + Data format ---
-    if 'data' in kwargs:
+    elif 'data' in kwargs:
         pc1 = kwargs.get('pc1', 0)
         pc2 = kwargs.get('pc2', 0)
         pc3 = kwargs.get('pc3', 0)
@@ -92,21 +103,21 @@ def abhadra():
     label("flip_x")
     mov(x,invert(x))						# address: 14  - invert x for 2 complements addition +
     jmp("consume_n_move_ahead")				# address: 15
-    jmp(y_dec,"flip_x")						# address: 16  - < y decrement for BF
+    jmp(y_dec,"flip_y")						# address: 16  - < y decrement for BF
     label("flip_y")
     mov(y,invert(y))						# address: 17  - invert y for 2 complements addition >
     jmp("consume_n_move_ahead")				# address: 18
     label("return_to_the_start_of_the_loop")
     label("skip_the_loop")
-    in_(osr,27)								# address: 19
+    in_(osr,32)								# address: 19
     jmp("just_push")						# address: 20
     label("arbitrary_execute")
     out(null,5)								# address: 21
     out(exec,16)							# address: 22
     jmp("move_ahead")						# address: 23
-    in_(pins,1)								# address: 24
     label("in_to_memory")
-    jmp(x_dec,"out_to_memory")				# address: 25
+    in_(pins,1)								# address: 24
+    jmp(x_dec,"in_to_memory")				# address: 25
     jmp("consume_n_move_ahead")				# address: 26
     label("out_to_memory")
     out(pins,1)								# address: 27
@@ -148,20 +159,67 @@ def program(istructs):
 #print(hex(sm.get()))
 #print(hex(sm.get()))
 #pc_targets = {'pc1': 2, 'pc2': 4, 'pc3': 6, 'pc4': 8, 'pc5': 10}
-pc_targets = {'pc1': 2, 'data': 0xC0DE, 'pc2': 29, 'pc3': 5}
+
+# Sequence to assign a value to x
+pc_targets = {'pc1': 2, 'data': 0xC0DE, 'pc2': 5, 'pc3': 7}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 
-pc_targets = {'pc1': 7, 'pc2': 29, 'pc3': 29, 'pc4': 29, 'pc5': 29}
+pc_targets = {'pc1': 13, 'pc2': 14, 'pc3': 5, 'pc4': 7, 'pc5': 29}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
-#print(hex(sm.get()))
-#print(hex(sm.get()))
-#print(hex(sm.get()))
-#print(hex(sm.get()))
-#print(hex(sm.get()))
-#print(hex(sm.get()))
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 14, 'pc2': 13, 'pc3': 5, 'pc4': 7, 'pc5': 29}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 2, 'data': 0xADDE, 'pc2': 5, 'pc3': 7}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 21,'data': 0xa041, 'pc2': 16, 'pc3': 17}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+
+pc_targets = {'pc1': 21,'data': 0xa022, 'pc2': 5, 'pc3': 7}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 17, 'pc2': 16, 'pc3': 29, 'pc4': 29, 'pc5': 29}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+
+pc_targets = {'pc1': 21,'data': 0xa022, 'pc2': 5, 'pc3': 7}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 11,'data': 0xfffffff}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 2, 'data': 0x0, 'pc2': 5, 'pc3': 7}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+pc_targets = {'pc1': 9,'data': 0xfffffff}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+print(hex(sm.get()))
+
+# Out to Memory test
+pc_targets = {'pc1': 2, 'data': 31, 'pc2': 27, 'pc3': 29}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+time.sleep(10)
+
 sm.active(0)
 #machine.reset()
 
