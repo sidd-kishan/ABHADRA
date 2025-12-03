@@ -191,11 +191,11 @@ word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
 
-pc_targets = {'pc1': 21,'data': 0xa041, 'pc2': 16, 'pc3': 17}
+pc_targets = {'pc1': 21,'data': rp2.asm_pio_encode("mov(y, x)",0), 'pc2': 16, 'pc3': 17}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 
-pc_targets = {'pc1': 21,'data': 0xa022, 'pc2': 5, 'pc3': 7}
+pc_targets = {'pc1': 21,'data': rp2.asm_pio_encode("mov(x, y)",0), 'pc2': 5, 'pc3': 7}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
@@ -204,7 +204,7 @@ pc_targets = {'pc1': 17, 'pc2': 16, 'pc3': 29, 'pc4': 29, 'pc5': 29}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 
-pc_targets = {'pc1': 21,'data': 0xa022, 'pc2': 5, 'pc3': 7}
+pc_targets = {'pc1': 21,'data': rp2.asm_pio_encode("mov(x, y)",0), 'pc2': 5, 'pc3': 7}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
@@ -229,7 +229,19 @@ pc_targets = {'pc1': 2, 'data': 10, 'pc2': 27, 'pc3': 31}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 #print(hex(sm.get()))
+
+pc_targets = {'pc1': 21,'data': rp2.asm_pio_encode("set(pins, 1)",0), 'pc2': 29, 'pc3': 29}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+
 time.sleep(1)
+
+pc_targets = {'pc1': 21,'data': rp2.asm_pio_encode("set(pins, 0)",0), 'pc2': 29, 'pc3': 29}
+word = pack_pio_jumps(**pc_targets)
+sm.put(word)
+
+time.sleep(1)
+
 
 sm.active(0)
 #machine.reset()
