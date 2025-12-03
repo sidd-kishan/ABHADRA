@@ -2,6 +2,16 @@ import rp2
 from machine import Pin
 import time
 
+def reverse_bits(n, bit_width):
+    reversed_n = 0
+    for i in range(bit_width):
+        if (n >> i) & 1:  # Check if the i-th bit is set
+            reversed_n |= (1 << (bit_width - 1 - i)) # Set the corresponding bit in the reversed number
+    return reversed_n
+
+# Example usage for an 8-bit number
+number = 0b10110011 # 179
+reversed_number = reverse_bits(number, 8)
 
 def pack_pio_jumps(**kwargs) -> int:
     """
@@ -14,7 +24,7 @@ def pack_pio_jumps(**kwargs) -> int:
     Args (via kwargs):
         For Format 1: pc1, pc2, pc3, pc4, pc5, pc6 (0-15)
         For Format 2: pc1, data (0-65535), pc2, pc3 (0-15)
-        For Format 3: pc1, addr (0-0xffffffE)
+        For Format 3: pc1, addr (0-0x7fffffe)
 
     Returns:
         The single 32-bit integer for sm.put().
@@ -27,7 +37,7 @@ def pack_pio_jumps(**kwargs) -> int:
         addr = kwargs.get('addr', 0)
         packed_word = (
             (pc1 << 0)    |  # PC1: Bits 0-4 (LSB)
-            (addr << 5)      # Data: Bits 5-31
+            (reverse_bits(addr, 26) << 5)      # Data: Bits 5-31
         )
         return packed_word
     # --- Format 2 Check: If 'data' is provided, use the 3 Jumps + Data format ---
@@ -199,7 +209,7 @@ word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
 
-pc_targets = {'pc1': 11,'data': 0xfffffff}
+pc_targets = {'pc1': 11,'addr': 0xfffffff}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
@@ -209,18 +219,20 @@ word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
 
-pc_targets = {'pc1': 9,'data': 0xfffffff}
+pc_targets = {'pc1': 9,'addr': 0xfffffff}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
 print(hex(sm.get()))
 
 # Out to Memory test
-pc_targets = {'pc1': 2, 'data': 31, 'pc2': 27, 'pc3': 29}
+pc_targets = {'pc1': 2, 'data': 10, 'pc2': 27, 'pc3': 31}
 word = pack_pio_jumps(**pc_targets)
 sm.put(word)
-time.sleep(10)
+#print(hex(sm.get()))
+time.sleep(1)
 
 sm.active(0)
 #machine.reset()
+
 
 
